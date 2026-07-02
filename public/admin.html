@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CircleCo – Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <link href="/css/style.css" rel="stylesheet" />
+  
+  <style>
+    /* Nomba Dark Theme Brand Identity Alignment */
+    :root {
+      --nomba-yellow: #FFD400;
+      --nomba-yellow-hover: #E6BE00;
+      --nomba-dark: #0B0B0C;
+      --nomba-dark-card: #141416;
+      --nomba-dark-input: #1C1C1E;
+      --nomba-border: #27272A;
+      --nomba-muted-text: #A1A1AA;
+      --sidebar-width: 260px;
+    }
+
+    body {
+      background-color: var(--nomba-dark) !important;
+      color: #FFFFFF !important;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Layout Structure containing Sidebar & Main Panel */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar Custom Styling */
+    .sidebar {
+      width: var(--sidebar-width);
+      background-color: var(--nomba-dark-card);
+      border-right: 1px solid var(--nomba-border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar-brand {
+      padding: 24px;
+      font-size: 1.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      border-bottom: 1px solid var(--nomba-border);
+    }
+    .sidebar-brand span.brand-gold {
+      color: var(--nomba-yellow);
+    }
+
+    .sidebar-menu {
+      padding: 24px 16px;
+      flex-grow: 1;
+    }
+
+    .sidebar .nav-link {
+      color: var(--nomba-muted-text) !important;
+      font-weight: 500;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .sidebar .nav-link i {
+      font-size: 1.1rem;
+    }
+
+    .sidebar .nav-link:hover {
+      color: #FFFFFF !important;
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .sidebar .nav-link.active {
+      color: var(--nomba-dark) !important;
+      background-color: var(--nomba-yellow) !important;
+      font-weight: 600;
+    }
+
+    .sidebar-footer {
+      padding: 20px 16px;
+      border-top: 1px solid var(--nomba-border);
+    }
+
+    /* Main Content Styling Window */
+    .main-content {
+      flex-grow: 1;
+      margin-left: var(--sidebar-width);
+      padding: 40px;
+      transition: margin-left 0.3s ease;
+    }
+
+    /* Top Bar for Mobile Screens */
+    .mobile-header {
+      display: none;
+      background-color: var(--nomba-dark-card);
+      border-bottom: 1px solid var(--nomba-border);
+      padding: 16px 24px;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    /* Cards overhaul */
+    .card {
+      background-color: var(--nomba-dark-card) !important;
+      border: 1px solid var(--nomba-border) !important;
+      border-radius: 12px !important;
+      color: #FFFFFF !important;
+      overflow: hidden;
+    }
+    .card-header {
+      background-color: rgba(255, 255, 255, 0.02) !important;
+      border-bottom: 1px solid var(--nomba-border) !important;
+      font-weight: 700;
+      padding: 16px 20px;
+    }
+
+    /* Metrics Stat Blocks */
+    .text-bg-primary, .text-bg-success, .text-bg-warning, .text-bg-info {
+      background-color: var(--nomba-dark-card) !important;
+      border: 1px solid var(--nomba-border) !important;
+      color: #FFFFFF !important;
+    }
+    .card-title {
+      color: var(--nomba-muted-text) !important;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+    .display-6 {
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+    #statSavings { color: var(--nomba-yellow); }
+    #statPendingLoans { color: #FF453A; }
+    #statEligible { color: #30D158; }
+
+    /* Tables UI corrections */
+    .table {
+      color: #FFFFFF !important;
+      margin-bottom: 0;
+    }
+    .table th {
+      color: var(--nomba-muted-text) !important;
+      font-weight: 600;
+      border-bottom: 2px solid var(--nomba-border) !important;
+      font-size: 13px;
+      padding: 14px;
+    }
+    .table td {
+      border-bottom: 1px solid var(--nomba-border) !important;
+      padding: 14px;
+      vertical-align: middle;
+      font-size: 14px;
+      background: transparent !important;
+      color: #FFFFFF !important;
+    }
+    .table-hover tbody tr:hover td {
+      background-color: rgba(255, 255, 255, 0.03) !important;
+    }
+
+    /* Input Controls */
+    .form-control, .form-select {
+      background-color: var(--nomba-dark-input) !important;
+      border: 1px solid var(--nomba-border) !important;
+      color: #FFFFFF !important;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--nomba-yellow) !important;
+      box-shadow: 0 0 0 2px rgba(255, 212, 0, 0.15) !important;
+    }
+
+    /* Buttons handles mapped directly onto layout actions */
+    .btn-success, [data-bs-target="#onboardModal"], #ruleForm button {
+      background-color: var(--nomba-yellow) !important;
+      color: var(--nomba-dark) !important;
+      border: none !important;
+      font-weight: 700;
+    }
+    .btn-success:hover, [data-bs-target="#onboardModal"]:hover, #ruleForm button:hover {
+      background-color: var(--nomba-yellow-hover) !important;
+    }
+
+    .btn-secondary, [data-bs-target="#bulkModal"], #bulkForm button {
+      background-color: transparent !important;
+      color: #FFFFFF !important;
+      border: 1px solid var(--nomba-border) !important;
+      font-weight: 600;
+    }
+    .btn-secondary:hover, [data-bs-target="#bulkModal"]:hover, #bulkForm button:hover {
+      background-color: rgba(255,255,255,0.05) !important;
+    }
+
+    #logoutBtn {
+      border-color: var(--nomba-border) !important;
+      color: #FFFFFF !important;
+    }
+    #logoutBtn:hover {
+      background-color: #FF453A !important;
+      border-color: #FF453A !important;
+    }
+
+    /* Modal layout updates */
+    .modal-content {
+      background-color: var(--nomba-dark-card) !important;
+      border: 1px solid var(--nomba-border) !important;
+      border-radius: 16px;
+      color: #FFFFFF;
+    }
+    .modal-header { border-bottom: 1px solid var(--nomba-border); }
+    .btn-close { filter: invert(1); }
+
+    /* Responsive Viewport Queries */
+    @media (max-width: 991.98px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+      .sidebar.show {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 24px 16px;
+      }
+      .mobile-header {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- MOBILE STICKY HEADER -->
+    <div class="mobile-header w-100">
+      <span class="fw-bold"><i class="bi bi-people-fill me-2 text-warning"></i>CircleCo</span>
+      <button class="btn btn-outline-light btn-sm" id="sidebarToggle">
+        <i class="bi bi-list fs-4"></i>
+      </button>
+    </div>
+
+    <!-- SIDEBAR NAVIGATION MENU CONTAINER -->
+    <aside class="sidebar" id="sidebarContainer">
+      <div class="sidebar-brand">
+        <i class="bi bi-people-fill me-2 text-warning"></i>Circle<span class="brand-gold">Co</span>
+      </div>
+      
+      <div class="sidebar-menu">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="#" data-section="dashboard">
+              <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-section="members">
+              <i class="bi bi-people-fill"></i> Members
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-section="loans">
+              <i class="bi bi-wallet2"></i> Loan Apps
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-section="rules">
+              <i class="bi bi-sliders"></i> Loan Rules
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="btn btn-outline-light w-100 py-2" id="logoutBtn">
+          <i class="bi bi-box-arrow-left me-2"></i>Logout
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN PANEL WRAPPER -->
+    <main class="main-content">
+      
+      <!-- DASHBOARD SECTION -->
+      <div id="section-dashboard">
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="card text-bg-primary">
+              <div class="card-body p-4">
+                <h5 class="card-title">Total Members</h5>
+                <p class="card-text display-6" id="statMembers">0</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-bg-success">
+              <div class="card-body p-4">
+                <h5 class="card-title">Total Savings</h5>
+                <p class="card-text display-6" id="statSavings">₦0</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-bg-warning">
+              <div class="card-body p-4">
+                <h5 class="card-title">Pending Loans</h5>
+                <p class="card-text display-6" id="statPendingLoans">0</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card text-bg-info">
+              <div class="card-body p-4">
+                <h5 class="card-title">Eligible Members</h5>
+                <p class="card-text display-6" id="statEligible">0</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>Recent Members</span>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-success px-3 py-2" data-bs-toggle="modal" data-bs-target="#onboardModal">
+                <i class="bi bi-person-plus me-1"></i> Onboard
+              </button>
+              <button class="btn btn-sm btn-secondary px-3 py-2" data-bs-toggle="modal" data-bs-target="#bulkModal">
+                <i class="bi bi-upload me-1"></i> Bulk
+              </button>
+            </div>
+          </div>
+          <div class="card-body p-4">
+            <input type="text" class="form-control mb-3" id="memberSearch" placeholder="Search members..." />
+            <div class="table-responsive">
+              <table class="table table-hover" id="memberTable">
+                <thead><tr><th>Name</th><th>Phone</th><th>Balance</th><th>Months</th><th>Eligible</th></tr></thead>
+                <tbody id="memberTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMBERS SECTION (Full List) -->
+      <div id="section-members" style="display:none;">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>All Members</span>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-success px-3 py-2" data-bs-toggle="modal" data-bs-target="#onboardModal">
+                <i class="bi bi-person-plus me-1"></i> Onboard
+              </button>
+              <button class="btn btn-sm btn-secondary px-3 py-2" data-bs-toggle="modal" data-bs-target="#bulkModal">
+                <i class="bi bi-upload me-1"></i> Bulk
+              </button>
+            </div>
+          </div>
+          <div class="card-body p-4">
+            <input type="text" class="form-control mb-3" id="memberSearchFull" placeholder="Search..." />
+            <div class="table-responsive"><table class="table"><tbody id="memberTableFull"></tbody></table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOAN APPLICATIONS SECTION -->
+      <div id="section-loans" style="display:none;">
+        <div class="card">
+          <div class="card-header">Loan Applications</div>
+          <div class="card-body p-4">
+            <div class="table-responsive"><table class="table"><thead><tr><th>Member</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="loanAppsBody"></tbody></table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOAN RULES SECTION -->
+      <div id="section-rules" style="display:none;">
+        <div class="card">
+          <div class="card-header">Loan Eligibility Rules</div>
+          <div class="card-body p-4">
+            <form id="ruleForm">
+              <div class="mb-3">
+                <label class="form-label text-muted small mb-2 " style="color: white;">Minimum Months Saved</label>
+                <input type="number" class="form-control" id="minMonths" style="max-width:300px;" required />
+              </div>
+              <button type="submit" class="btn btn-primary px-4 py-2">Update Rule</button>
+            </form>
+            <div id="ruleStatus" class="mt-2"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ONBOARD MODAL -->
+  <div class="modal fade" id="onboardModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header"><h5>Onboard Member</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body p-4">
+          <form id="onboardForm">
+            <input type="text" class="form-control mb-3" id="oFirstName" placeholder="First Name" required />
+            <input type="text" class="form-control mb-3" id="oLastName" placeholder="Last Name" required />
+            <input type="tel" class="form-control mb-3" id="oPhone" placeholder="Phone" required />
+            <input type="number" class="form-control mb-3" id="oMonths" placeholder="Months Saved" />
+            <input type="number" class="form-control mb-3" id="oBalance" placeholder="Current Balance" />
+            <button type="submit" class="btn btn-success w-100 py-2.5">Onboard</button>
+          </form>
+          <div id="onboardResult" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BULK MODAL -->
+  <div class="modal fade" id="bulkModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header"><h5>Bulk Upload Excel</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body p-4">
+          <form id="bulkForm" enctype="multipart/form-data">
+            <input type="file" class="form-control mb-3" id="bulkFile" accept=".xlsx,.xls" required />
+            <button type="submit" class="btn btn-secondary w-100 py-2.5">Upload</button>
+          </form>
+          <div id="bulkResult" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/common.js"></script>
+  <script src="/js/admin.js"></script>
+  
+  <script>
+    // Tiny toggle intercept for mobile layouts without affecting original global JS files
+    document.getElementById('sidebarToggle')?.addEventListener('click', function() {
+      document.getElementById('sidebarContainer')?.classList.toggle('show');
+    });
+    // Auto collapse mobile sidebar drawer layout on layout selector clicks
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('sidebarContainer')?.classList.remove('show');
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CircleCo – Super Admin</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+  <style>
+    body {
+      background: #f8f9fc;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .login-card {
+      max-width: 420px;
+      margin: 10vh auto;
+      border-radius: 1.5rem;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    }
+    .nav-tabs .nav-link.active {
+      font-weight: 600;
+      color: #667eea !important;
+      border-bottom: 3px solid #667eea;
+    }
+    .btn-primary {
+      background: #667eea;
+      border: none;
+    }
+    .btn-primary:hover {
+      background: #5a67d8;
+    }
+    .table-responsive {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .wa-btn {
+      background: #25D366;
+      color: white;
+      border: none;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+    .wa-btn:hover {
+      background: #1da851;
+      color: white;
+    }
+    .badge-pending {
+      background-color: #ffc107;
+      color: #212529;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== LOGIN SECTION ==================== -->
+  <div id="loginSection" class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-5">
+        <div class="card login-card">
+          <div class="card-body p-4 p-md-5">
+            <div class="text-center mb-4">
+              <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
+              <h2 class="mt-2">Super Admin</h2>
+              <p class="text-muted">Sign in to manage everything</p>
+            </div>
+            <form id="loginForm">
+              <div class="mb-3">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" id="loginEmail" placeholder="superadmin@circleco.com" required />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required />
+              </div>
+              <button type="submit" class="btn btn-primary w-100 py-2" id="loginBtn">Sign In</button>
+            </form>
+            <div id="loginError" class="alert alert-danger mt-3 d-none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DASHBOARD SECTION ==================== -->
+  <div id="dashboardSection" style="display:none;">
+    <!-- Top Nav -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <span class="navbar-brand"><i class="bi bi-shield-fill-check me-2"></i>Super Admin</span>
+        <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
+      </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+      <!-- Tabs -->
+      <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">
+            <i class="bi bi-person-x me-1"></i> PIN Not Set
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="transfers-tab" data-bs-toggle="tab" data-bs-target="#transfers" type="button" role="tab">
+            <i class="bi bi-arrow-up-circle me-1"></i> Successful Transfers
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content">
+        <!-- TAB 1: Pending PIN Setup -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+          <div class="card">
+            <div class="card-header">
+              <i class="bi bi-people me-2"></i> Members who haven't set their PIN
+              <span class="badge bg-warning text-dark ms-2" id="pendingCount">0</span>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover" id="pendingTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Phone</th>
+                      <th>Temporary Password</th>
+                      <th>Virtual Account</th>
+                      <th>Cooperative</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pendingBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: Successful Transfers -->
+        <div class="tab-pane fade" id="transfers" role="tabpanel">
+          <div class="card">
+            <div class="card-header">
+              <i class="bi bi-arrow-up-circle me-2"></i> All Successful Wallet Funding
+              <span class="badge bg-success ms-2" id="transferCount">0</span>
+            </div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table table-hover" id="transferTable">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Member</th>
+                      <th>Amount (₦)</th>
+                      <th>Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="transferBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FIREBASE & SCRIPTS ==================== -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ------------------------------------------------------------------
+    // 1. FIREBASE CONFIG – Replace with your own
+    // ------------------------------------------------------------------
+   const firebaseConfig = {
+  apiKey: "AIzaSyC8QXAM2cEySKJuhVPobuEH7nzSX8xyULA",
+  authDomain: "observer-d8ad4.firebaseapp.com",
+  databaseURL: "https://observer-d8ad4-default-rtdb.firebaseio.com",
+  projectId: "observer-d8ad4",
+  storageBucket: "observer-d8ad4.firebasestorage.app",
+  messagingSenderId: "502571433434",
+  appId: "1:502571433434:web:313b0635ad9706e18ed4e3",
+  measurementId: "G-CXFDB13376"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // ------------------------------------------------------------------
+    // 2. DOM REFS
+    // ------------------------------------------------------------------
+    const loginSection = document.getElementById('loginSection');
+    const dashboardSection = document.getElementById('dashboardSection');
+    const loginForm = document.getElementById('loginForm');
+    const loginError = document.getElementById('loginError');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    const pendingBody = document.getElementById('pendingBody');
+    const pendingCount = document.getElementById('pendingCount');
+    const transferBody = document.getElementById('transferBody');
+    const transferCount = document.getElementById('transferCount');
+
+    // ------------------------------------------------------------------
+    // 3. LOGIN
+    // ------------------------------------------------------------------
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const btn = document.getElementById('loginBtn');
+      loginError.classList.add('d-none');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
+
+      try {
+        const userCred = await auth.signInWithEmailAndPassword(email, password);
+        const user = userCred.user;
+
+        // Verify super admin role
+        const snap = await db.ref('superAdmins/' + user.uid).once('value');
+        if (!snap.exists() || snap.val().role !== 'super_admin') {
+          await auth.signOut();
+          throw new Error('You are not authorized as a super admin.');
+        }
+
+        // Success – show dashboard
+        loginSection.style.display = 'none';
+        dashboardSection.style.display = 'block';
+        await loadDashboardData();
+      } catch (err) {
+        loginError.textContent = err.message;
+        loginError.classList.remove('d-none');
+        btn.disabled = false;
+        btn.innerHTML = 'Sign In';
+      }
+    });
+
+    // ------------------------------------------------------------------
+    // 4. LOGOUT
+    // ------------------------------------------------------------------
+    logoutBtn.addEventListener('click', async () => {
+      await auth.signOut();
+      dashboardSection.style.display = 'none';
+      loginSection.style.display = 'block';
+      document.getElementById('loginForm').reset();
+      document.getElementById('loginBtn').disabled = false;
+      document.getElementById('loginBtn').innerHTML = 'Sign In';
+    });
+
+    // ------------------------------------------------------------------
+    // 5. LOAD DASHBOARD DATA
+    // ------------------------------------------------------------------
+    async function loadDashboardData() {
+      try {
+        // ------ A. FETCH ALL MEMBERS (to find those without PIN) ------
+        const membersSnap = await db.ref('members').once('value');
+        const members = [];
+        const coopMap = {};
+
+        membersSnap.forEach((child) => {
+          const data = child.val();
+          data.id = child.key;
+          members.push(data);
+        });
+
+        // ------ B. FETCH COOPERATIVES (for names) ------
+        const coopSnap = await db.ref('cooperatives').once('value');
+        coopSnap.forEach((child) => {
+          coopMap[child.key] = child.val().name || 'Unknown Co-op';
+        });
+
+        // ------ C. FILTER PENDING (hasCompletedFirstLogin === false or missing) ------
+        const pending = members.filter(m => m.hasCompletedFirstLogin !== true);
+
+        // Render pending table
+        pendingBody.innerHTML = '';
+        pending.forEach((m, idx) => {
+          const coopName = coopMap[m.cooperativeId] || 'Unknown';
+          const phone = m.phone || '';
+          const tempPwd = m.tempPassword || 'N/A';
+
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${idx + 1}</td>
+            <td>${m.firstName || ''} ${m.lastName || ''}</td>
+            <td>${phone}</td>
+            <td>${tempPwd}</td>
+            <td>${m.virtualAccountNumber || 'N/A'}</td>
+            <td>${coopName}</td>
+            <td>
+              <button class="btn btn-sm wa-btn" onclick="sendWhatsAppPending('${m.id}')">
+                <i class="bi bi-whatsapp me-1"></i> Notify
+              </button>
+            </td>
+          `;
+          pendingBody.appendChild(row);
+        });
+        pendingCount.textContent = pending.length;
+
+        // ------ D. FETCH SUCCESSFUL TRANSFERS ------
+        const txnSnap = await db.ref('savingsTransactions').orderByChild('status').equalTo('successful').once('value');
+        const txns = [];
+        const memberMap = {};
+
+        txnSnap.forEach((child) => {
+          const data = child.val();
+          data.id = child.key;
+          txns.push(data);
+        });
+
+        // Fetch member names
+        const memberIds = [...new Set(txns.map(t => t.memberId))];
+        for (const mid of memberIds) {
+          const snap = await db.ref('members/' + mid).once('value');
+          if (snap.exists()) {
+            const m = snap.val();
+            memberMap[mid] = `${m.firstName || ''} ${m.lastName || ''}`.trim() || mid;
+          } else {
+            memberMap[mid] = mid;
+          }
+        }
+
+        // Render transfers
+        transferBody.innerHTML = '';
+        txns.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+        txns.forEach((t, idx) => {
+          const amount = t.amount || 0;
+          const date = t.createdAt ? new Date(t.createdAt).toLocaleString() : 'N/A';
+          const memberName = memberMap[t.memberId] || t.memberId;
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${idx + 1}</td>
+            <td>${memberName}</td>
+            <td>₦${amount.toFixed(2)}</td>
+            <td>${date}</td>
+            <td>
+              <button class="btn btn-sm wa-btn" onclick="sendWhatsAppTransfer('${t.id}')">
+                <i class="bi bi-whatsapp me-1"></i> Confirm
+              </button>
+            </td>
+          `;
+          transferBody.appendChild(row);
+        });
+        transferCount.textContent = txns.length;
+
+        // Store data for later use in wa.me functions
+        window.__pendingMembers = pending;
+        window.__transferData = txns;
+        window.__memberMap = memberMap;
+        window.__coopMap = coopMap;
+
+      } catch (err) {
+        console.error('Error loading dashboard:', err);
+        alert('Failed to load data. Check console for details.');
+      }
+    }
+
+    // ------------------------------------------------------------------
+    // 6. WHATSAPP MESSAGE FUNCTIONS
+    // ------------------------------------------------------------------
+
+    function getMemberData(memberId) {
+      return window.__pendingMembers.find(m => m.id === memberId);
+    }
+
+    function getCoopName(coopId) {
+      return window.__coopMap[coopId] || 'CircleCo';
+    }
+
+    // Send message for pending PIN setup
+    window.sendWhatsAppPending = function(memberId) {
+      const member = getMemberData(memberId);
+      if (!member) {
+        alert('Member data not found.');
+        return;
+      }
+      const coopName = getCoopName(member.cooperativeId);
+      const name = `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Member';
+      const phone = member.phone || '';
+      const tempPassword = member.tempPassword || '(not set)';
+      const virtualAccount = member.virtualAccountNumber || 'N/A';
+
+      const loginDetail = `Phone: ${phone}\nTemporary Password: ${tempPassword}`;
+      const message = `Dear ${name},\n\nYou can now sign in to CircleCo to view your ${coopName} dashboard.\n\nYour login details:\n${loginDetail}\n\nYour virtual account number: ${virtualAccount}\n\nPlease log in and set your 4-digit PIN to complete your registration.\n\nThank you.`;
+
+      sendWhatsApp(phone, message);
+    };
+
+    // Send message for successful transfer
+    window.sendWhatsAppTransfer = function(txnId) {
+      const txn = window.__transferData.find(t => t.id === txnId);
+      if (!txn) {
+        alert('Transaction not found.');
+        return;
+      }
+      const memberRef = db.ref('members/' + txn.memberId);
+      memberRef.once('value').then((snap) => {
+        const member = snap.val();
+        const phone = member ? member.phone : '';
+        const coopName = getCoopName(member ? member.cooperativeId : null);
+        const name = member ? `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Member' : 'Member';
+        const amount = txn.amount || 0;
+        const message = `Dear ${name},\n\nYour CircleCo wallet has been credited with ₦${amount.toFixed(2)}.\n\nYour current balance can be viewed in your dashboard.\n\nThank you for saving with ${coopName}!`;
+        sendWhatsApp(phone, message);
+      }).catch(err => {
+        alert('Could not fetch member details.');
+        console.error(err);
+      });
+    };
+
+    // Generic WhatsApp sender
+    function sendWhatsApp(phone, message) {
+      if (!phone) {
+        alert('No phone number available for this member.');
+        return;
+      }
+      const cleanPhone = phone.replace(/\s/g, '').replace(/^\+/, '');
+      const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+      window.open(url, '_blank');
+    }
+
+    // ------------------------------------------------------------------
+    // 7. AUTO-REDIRECT IF ALREADY LOGGED IN
+    // ------------------------------------------------------------------
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        try {
+          const snap = await db.ref('superAdmins/' + user.uid).once('value');
+          if (snap.exists() && snap.val().role === 'super_admin') {
+            loginSection.style.display = 'none';
+            dashboardSection.style.display = 'block';
+            await loadDashboardData();
+          } else {
+            await auth.signOut();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

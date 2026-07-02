@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CircleCo — Digitized Cooperative Savings & Loans</title>
+    
+    <!-- FIXED Bootstrap 5 CSS CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    
+    <style>
+        :root {
+            --nomba-yellow: #FFD400;
+            --nomba-yellow-hover: #E6BE00;
+            --nomba-dark: #0B0B0C;
+            --nomba-dark-card: #141416;
+            --nomba-gray-text: #7C7C80;
+            --nomba-light-bg: #F9FAFB;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--nomba-dark);
+            background-color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        /* Buttons styling */
+        .btn-nomba-primary {
+            background-color: var(--nomba-yellow);
+            color: var(--nomba-dark);
+            font-weight: 700;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-nomba-primary:hover {
+            background-color: var(--nomba-yellow-hover);
+            color: var(--nomba-dark);
+        }
+
+        .btn-nomba-secondary {
+            background-color: transparent;
+            color: var(--nomba-dark);
+            font-weight: 600;
+            border: 1px solid #E4E4E7;
+            padding: 14px 32px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-nomba-secondary:hover {
+            background-color: #F4F4F5;
+        }
+
+        .btn-nomba-dark {
+            background-color: var(--nomba-dark);
+            color: #ffffff;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 14px 32px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-nomba-dark:hover {
+            background-color: #1c1c1f;
+            color: #ffffff;
+        }
+
+        /* Layout sections */
+        .hero-section {
+            padding: 80px 0 100px 0;
+            background-color: #ffffff;
+        }
+
+        .trusted-section {
+            border-top: 1px solid #F4F4F5;
+            border-bottom: 1px solid #F4F4F5;
+            padding: 30px 0;
+            background-color: #ffffff;
+        }
+
+        .dark-feature-section {
+            background-color: var(--nomba-dark);
+            color: #ffffff;
+            padding: 100px 0;
+        }
+
+        .industry-section {
+            padding: 100px 0;
+            background-color: var(--nomba-light-bg);
+        }
+
+        /* Industry grids */
+        .industry-card {
+            background: #ffffff;
+            border: 1px solid #E4E4E7;
+            border-radius: 12px;
+            padding: 40px;
+            height: 100%;
+        }
+        
+        .icon-box {
+            background-color: var(--nomba-yellow);
+            color: var(--nomba-dark);
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 24px;
+            font-weight: bold;
+        }
+
+        .yellow-cta-banner {
+            background-color: var(--nomba-yellow);
+            padding: 80px 0;
+            color: var(--nomba-dark);
+        }
+
+        footer {
+            background-color: var(--nomba-dark);
+            color: #ffffff;
+            padding: 80px 0 40px 0;
+        }
+        footer a {
+            color: var(--nomba-gray-text);
+            text-decoration: none;
+        }
+        footer a:hover {
+            color: #ffffff;
+        }
+
+        .nomba-badge {
+            background-color: #FFFBEB;
+            color: #D97706;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top border-bottom py-3">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <span class="fw-bolder fs-3"><span class="text-dark">Circle</span><span class="text-warning">Co</span></span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link fw-medium px-3 text-dark" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium px-3 text-dark" href="#how-it-works">How It Works</a></li>
+                    <li class="nav-item"><a class="nav-link fw-medium px-3 text-dark" href="#portals">Dual Portals</a></li>
+                </ul>
+                <div class="d-flex gap-2">
+                    <a href="auth.html" class="btn btn-nomba-secondary py-2 px-4">Log In</a>
+                    <a href="auth.html" class="btn btn-nomba-primary py-2 px-4">Create Free Co-Op</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-6">
+                    <div class="nomba-badge mb-3"><i class="bi bi-lightning-charge-fill"></i> Powered by Nomba API</div>
+                    <h1 class="display-4 mb-3 text-dark">Digitize Your Cooperative Savings & Loans in Minutes</h1>
+                    <p class="lead text-secondary mb-4">
+                        Manage your cooperative society structure natively using Nomba-powered virtual wallets. No complicated spreadsheets, zero manual reconciliation issues, and absolutely no bank queues.
+                    </p>
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="auth.html" class="btn btn-nomba-primary btn-lg">Open Co-Op Account</a>
+                        <a href="auth.html" class="btn btn-nomba-secondary btn-lg">Access Portals</a>
+                    </div>
+                    <div class="row mt-5 pt-4 border-top g-3">
+                        <div class="col-4">
+                            <h3 class="mb-0 fw-bold">100%</h3>
+                            <p class="text-muted small mb-0">Automated Audit Logs</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="mb-0 fw-bold">Instant</h3>
+                            <p class="text-muted small mb-0">Nomba Wallets</p>
+                        </div>
+                        <div class="col-4">
+                            <h3 class="mb-0 fw-bold">Whatsapp</h3>
+                            <p class="text-muted small mb-0">Secure Message Delivery</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="p-5 rounded-4 shadow-lg bg-dark text-white">
+                        <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
+                            <span class="fw-bold"><i class="bi bi-wallet2 text-warning me-2"></i> CircleCo Dashboard</span>
+                            <span class="badge bg-success">Live API Status</span>
+                        </div>
+                        <div class="mb-4">
+                            <label class="text-muted small d-block mb-1">Active Cooperative Balance</label>
+                            <h2 class="text-warning fw-bold display-6">₦14,850,000.00</h2>
+                        </div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-6">
+                                <div class="bg-secondary bg-opacity-25 p-3 rounded">
+                                    <span class="text-muted small d-block">Active Members</span>
+                                    <span class="fw-bold">1,240 Onboarded</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="bg-secondary bg-opacity-25 p-3 rounded">
+                                    <span class="text-muted small d-block">Pending Loans</span>
+                                    <span class="fw-bold text-info">18 Approved</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-black bg-opacity-50 rounded text-muted small d-flex align-items-center">
+                            <i class="bi bi-shield-check text-success me-2 fs-5"></i> Secure multi-tenant architecture utilizing strict query session isolation.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trusted By Section -->
+    <div class="trusted-section text-center">
+        <div class="container">
+            <p class="text-uppercase tracking-wider text-muted small fw-bold mb-0">Trusted by Local FinTech Integrations and Micro-Finance Networks across Nigeria</p>
+        </div>
+    </div>
+
+    <!-- Dark Section: Core Features -->
+    <section id="features" class="dark-feature-section">
+        <div class="container">
+            <div class="row align-items-center g-5">
+                <div class="col-lg-5">
+                    <h2 class="display-5 mb-4">Accept Payments, Manage Loans and Track Safely</h2>
+                    <p class="text-secondary mb-4">
+                        From individual automated card debits via tokenization to instant payouts, our infrastructure relies on the robust core capabilities of verified webhooks for absolute visibility.
+                    </p>
+                    <a href="auth.html" class="btn btn-nomba-primary">Learn More Today</a>
+                </div>
+                <div class="col-lg-7">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-3 h-100" style="background: var(--nomba-dark-card); border: 1px solid #27272A;">
+                                <i class="bi bi-person-plus-fill text-warning fs-3 mb-3 d-block"></i>
+                                <h4 class="h5">Bulk Excel Onboarding</h4>
+                                <p class="text-secondary small mb-0">Upload .xlsx sheets directly. The backend parses records and provisions Nomba Wallets automatically.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-3 h-100" style="background: var(--nomba-dark-card); border: 1px solid #27272A;">
+                                <i class="bi bi-chat-left-text-fill text-warning fs-3 mb-3 d-block"></i>
+                                <h4 class="h5">WhatsApp Transactional</h4>
+                                <p class="text-secondary small mb-0">Direct routes skip local DND configurations to deliver critical wallet balance updates straight to users anytime.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-3 h-100" style="background: var(--nomba-dark-card); border: 1px solid #27272A;">
+                                <i class="bi bi-credit-card-fill text-warning fs-3 mb-3 d-block"></i>
+                                <h4 class="h5">Automated Card Debits</h4>
+                                <p class="text-secondary small mb-0">Link member cards natively using Nomba secure tokenization loops for systematic periodic savings increments.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 rounded-3 h-100" style="background: var(--nomba-dark-card); border: 1px solid #27272A;">
+                                <i class="bi bi-shield-lock-fill text-warning fs-3 mb-3 d-block"></i>
+                                <h4 class="h5">Strict Tenant Separation</h4>
+                                <p class="text-secondary small mb-0">Every database interaction forces tenant filters derived straight from session JWTs, ensuring absolute data isolation.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Industry/How it works Section -->
+    <section id="how-it-works" class="industry-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <span class="text-warning text-uppercase fw-bold small tracking-widest d-block mb-2">Tailored Architecture</span>
+                <h2 class="display-6 fw-bold">Built for Every Cooperative Structure</h2>
+            </div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <div class="industry-card">
+                        <div class="icon-box"><i class="bi bi-building"></i></div>
+                        <h4 class="fw-bold mb-3">Cooperative Admins</h4>
+                        <p class="text-muted small mb-0">Establish dynamic loan rules, complete single or bulk onboarding workflows, oversee parameters, and process pipeline distributions instantly.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="industry-card">
+                        <div class="icon-box"><i class="bi bi-people"></i></div>
+                        <h4 class="fw-bold mb-3">Society Members</h4>
+                        <p class="text-muted small mb-0">Access personal virtual wallets, verify historical transactions live, apply for funding streams, and program recursive savings routines.</p>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="industry-card">
+                        <div class="icon-box"><i class="bi bi-graph-up-arrow"></i></div>
+                        <h4 class="fw-bold mb-3">Revenue Markup</h4>
+                        <p class="text-muted small mb-0">Deploy customizable percentage markups or fixed flat-rate premiums on standard settlement loops to power cooperative scaling.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dual Portals Section -->
+    <section id="portals" class="py-5 bg-white border-top">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h2 class="display-6 fw-bold">Select Your Workspace Access Point</h2>
+                <p class="text-muted">Access your respective platform environment environment securely.</p>
+            </div>
+            <div class="row justify-content-center g-4">
+                <div class="col-md-5">
+                    <div class="card border p-4 h-100 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-sliders text-dark fs-1 mb-3 d-block"></i>
+                            <h3 class="h4 fw-bold mb-3">Cooperative Admin</h3>
+                            <p class="text-muted small mb-4">Manage criteria rules, inspect bulk verification records, check validation outcomes, and approve loan configurations.</p>
+                            <button onclick="simulatePortalLogin('Admin')" class="btn btn-nomba-dark w-100">Enter Admin Portal (/admin)</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="card border p-4 h-100 shadow-sm text-center">
+                        <div class="card-body">
+                            <i class="bi bi-person-workspace text-dark fs-1 mb-3 d-block"></i>
+                            <h3 class="h4 fw-bold mb-3">Society Member</h3>
+                            <p class="text-muted small mb-4">Complete your initial forced PIN setup, monitor running balances, manage active debit details, and generate asset loan requests.</p>
+                            <button onclick="simulatePortalLogin('Member')" class="btn btn-nomba-primary w-100">Enter Member Portal (/member)</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Yellow CTA Banner -->
+    <section id="register" class="yellow-cta-banner text-center">
+        <div class="container">
+            <h2 class="display-5 mb-3 text-dark fw-bold">Your Cooperative Platform is 3 Minutes Away</h2>
+            <p class="lead text-dark opacity-75 mb-4 max-width-md mx-auto">Open a unified multi-tenant space and initialize modern smart-wallet mechanics immediately.</p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <button  onclick="simulateAction('Registration')" class="btn btn-nomba-dark btn-lg px-4">Open Business Account</button>
+                <button onclick="simulateAction('Demo')" class="btn btn-outline-dark btn-lg px-4 fw-semibold">Request Demo Flow</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toast Notification Box -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="demoToast" class="toast align-items-center text-white bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-info-circle text-warning me-2"></i> <span id="toastMsg">Action initiated.</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Area -->
+    <footer>
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-lg-4">
+                    <h3 class="fw-bold mb-3 text-white">Circle<span class="text-warning">Co</span></h3>
+                    <p class="text-secondary small">Digitizing savings structures securely via advanced digital multi-tenant architectures linked directly over Nomba API ecosystems.</p>
+                </div>
+                <div class="col-6 col-lg-2 offset-lg-2">
+                    <h6 class="text-white fw-bold mb-3">Platform</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#features" class="small">Core Engine</a></li>
+                        <li><a href="#how-it-works" class="small">Dual Portals</a></li>
+                        <li><a href="auth.html" class="small">Admin Login</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="text-white fw-bold mb-3">Integrations</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="small">Nomba Wallets</a></li>
+                        <li><a href="#" class="small">Easy messaging</a></li>
+                        <li><a href="#" class="small">Tokenization Loops</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-lg-2">
+                    <h6 class="text-white fw-bold mb-3">Compliance</h6>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="small">Tenant Separation</a></li>
+                        <li><a href="#" class="small">Audit Trails</a></li>
+                        <li><a href="#" class="small">Privacy Protocols</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-top border-secondary pt-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-secondary small">
+                <p class="mb-md-0">© 2026 CircleCo. All rights reserved. Built to spec for hackathon validation execution.</p>
+                <div class="d-flex gap-3">
+                    <a href="#"><i class="bi bi-twitter-x"></i></a>
+                    <a href="#"><i class="bi bi-linkedin"></i></a>
+                    <a href="#"><i class="bi bi-github"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JavaScript Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function simulatePortalLogin(portalType) {
+            const toastEl = document.getElementById('demoToast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = `Redirecting to Secure ${portalType} Area... JWT context claims initialized safely.`;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        function simulateAction(actionName) {
+            const toastEl = document.getElementById('demoToast');
+            const toastMsg = document.getElementById('toastMsg');
+            toastMsg.innerText = `Launching simulation for: ${actionName}. Hooking up virtual parameters.`;
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+    </script>
+</body>
+</html>

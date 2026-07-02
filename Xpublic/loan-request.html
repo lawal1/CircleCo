@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Loan</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/custom.css" />
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-primary">
+    <div class="container-fluid">
+      <span class="navbar-brand">CooperativeHub</span>
+      <button class="btn btn-outline-light" id="logoutBtn">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container mt-4">
+    <h2>Request a Loan</h2>
+    <div id="eligibilityMessage" class="alert alert-info"></div>
+    <form id="loanRequestForm">
+      <div class="mb-3">
+        <label>Amount (₦)</label>
+        <input type="number" class="form-control" id="loanAmount" required />
+      </div>
+      <div class="mb-3">
+        <label>Guarantor Member IDs (comma separated)</label>
+        <input type="text" class="form-control" id="guarantors" placeholder="MEM-123, MEM-456" required />
+      </div>
+      <div class="mb-3">
+        <label>Upload ID Document (PDF/Image)</label>
+        <input type="file" class="form-control" id="idDocument" accept="image/*,application/pdf" required />
+      </div>
+      <button type="submit" class="btn btn-primary">Submit Request</button>
+    </form>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/member.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await checkAuth();
+      await checkLoanEligibility();
+    });
+    document.getElementById('loanRequestForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const amount = parseInt(document.getElementById('loanAmount').value);
+      const guarantors = document.getElementById('guarantors').value.split(',').map(s => s.trim());
+      const file = document.getElementById('idDocument').files[0];
+      // In a real app, upload file to Firebase Storage or backend, get URL.
+      // For hackathon, we'll simulate by using a placeholder URL.
+      const idDocumentUrl = 'https://example.com/id_placeholder.pdf'; // replace with actual upload
+      await requestLoan({ amount, guarantorIds: guarantors, idDocument: idDocumentUrl });
+      alert('Loan request submitted!');
+    });
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+  </script>
+</body>
+</html>
