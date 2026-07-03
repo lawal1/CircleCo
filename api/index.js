@@ -1,4 +1,11 @@
 // api/index.js
-const app = require('../app'); // if you keep app logic separate
-// OR just put all your Express code here and export it
-module.exports = app;
+try {
+  const app = require('../app');
+  module.exports = app;
+} catch (err) {
+  console.error('❌ Failed to load app:', err);
+  // Return a 500 response manually to avoid crash
+  module.exports = (req, res) => {
+    res.status(500).json({ error: 'Initialization failed', detail: err.message });
+  };
+}
