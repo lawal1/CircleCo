@@ -699,3 +699,4 @@ if (require.main === module) {
     console.log(`CircleCo backend running on port ${PORT}`);
   });
 }
+module.exports = app;
