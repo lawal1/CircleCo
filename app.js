@@ -681,13 +681,21 @@ app.get('/health', (req, res) => {
 // ------------------------------------------------------------------
 // 8. START SERVER
 // ------------------------------------------------------------------
-app.listen(PORT, () => {
-  console.log(`CircleCo backend running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  if (process.env.MOCK_NOMBA === 'true') {
-    console.log('[INFO] MOCK_NOMBA is enabled – using fake wallet data.');
-  } else {
-    console.log('[INFO] MOCK_NOMBA is NOT set – real Nomba calls will be attempted.');
-    console.log('      Set MOCK_NOMBA=true in .env to avoid errors if Nomba is unreachable.');
-  }
-});
+// app.listen(PORT, () => {
+//   console.log(`CircleCo backend running on port ${PORT}`);
+//   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+//   if (process.env.MOCK_NOMBA === 'true') {
+//     console.log('[INFO] MOCK_NOMBA is enabled – using fake wallet data.');
+//   } else {
+//     console.log('[INFO] MOCK_NOMBA is NOT set – real Nomba calls will be attempted.');
+//     console.log('      Set MOCK_NOMBA=true in .env to avoid errors if Nomba is unreachable.');
+//   }
+// });
+
+// In app.js, at the very bottom:
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`CircleCo backend running on port ${PORT}`);
+  });
+}
