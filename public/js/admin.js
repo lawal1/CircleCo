@@ -114,7 +114,12 @@ async function loadMembers(search = '') {
     tbody.innerHTML = members.map(m => `
       <tr>
         <td>${m.firstName} ${m.lastName}</td>
-        <td>${m.phone}</td>
+        <td>
+          ${m.phone}<br/>
+          <small class="text-muted" style="font-size: 0.75rem;">
+            ${m.virtualAccountNumber ? `${m.virtualAccountNumber} (${m.bankName || 'Nomba Bank'})` : 'No virtual account'}
+          </small>
+        </td>
         <td>₦${(m.totalBalance || 0).toFixed(2)}</td>
         <td>${m.monthsSaved || 0}</td>
         <td><span class="badge ${m.isEligible ? 'bg-success' : 'bg-danger'}">${m.isEligible ? 'Yes' : 'No'}</span></td>

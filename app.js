@@ -13,6 +13,7 @@ const XLSX = require('xlsx');
 const multer = require('multer');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const path = require('path');
 
 // ------------------------------------------------------------------
@@ -57,7 +58,12 @@ const app = express();
 // Disable CSP entirely (for demo, allows inline scripts)
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString();
+  }
+}));
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static frontend
@@ -99,12 +105,21 @@ async function getNombaToken() {
   const now = Date.now();
   if (nombaAccessToken && nombaTokenExpiry > now) return nombaAccessToken;
   try {
-    const response = await axios.post(`${NOMBA_BASE_URL}/oauth/token`, {
-      grant_type: 'client_credentials',
-      client_id: NOMBA_CLIENT_ID,
-      client_secret: NOMBA_CLIENT_SECRET,
-    });
-    const { access_token, expires_in } = response.data;
+    const response = await axios.post(
+      `${NOMBA_BASE_URL}/auth/token/issue`,
+      {
+        grant_type: 'client_credentials',
+        client_id: NOMBA_CLIENT_ID,
+        client_secret: NOMBA_CLIENT_SECRET,
+      },
+      {
+        headers: {
+          'accountId': NOMBA_ACCOUNT_ID,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    const { access_token, expires_in } = response.data.data;
     nombaAccessToken = access_token;
     nombaTokenExpiry = now + (expires_in - 60) * 1000;
     return nombaAccessToken;
@@ -114,27 +129,35 @@ async function getNombaToken() {
   }
 }
 
-async function provisionNombaWallet(memberPhone, memberName) {
+async function provisionNombaWallet(accountRef, accountName) {
   if (process.env.MOCK_NOMBA === 'true') {
-    console.log(`[MOCK] Provisioning wallet for ${memberName} (${memberPhone})`);
+    console.log(`[MOCK] Provisioning wallet for ${accountName} (ref: ${accountRef})`);
     return {
       walletId: `mock_wallet_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
       virtualAccountNumber: `1234567890${Math.floor(100 + Math.random() * 900)}`,
+      bankName: 'Nomba Mock Bank',
     };
   }
 
   const token = await getNombaToken();
   try {
     const payload = {
-      accountId: NOMBA_ACCOUNT_ID,
-      customer: { phone: memberPhone, name: memberName },
+      accountRef,
+      accountName,
+      currency: 'NGN',
     };
-    const response = await axios.post(`${NOMBA_BASE_URL}/virtual-accounts`, payload, {
-      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    const response = await axios.post(`${NOMBA_BASE_URL}/accounts/virtual`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        accountId: NOMBA_ACCOUNT_ID,
+        'Content-Type': 'application/json',
+      },
     });
+    const vaData = response.data.data;
     return {
-      walletId: response.data.id,
-      virtualAccountNumber: response.data.accountNumber,
+      walletId: vaData.accountHolderId || vaData.accountRef || `va_${Date.now()}`,
+      virtualAccountNumber: vaData.bankAccountNumber,
+      bankName: vaData.bankName || 'Nomba Bank',
     };
   } catch (error) {
     console.error('Nomba wallet provisioning error:', error.response?.data || error.message);
@@ -143,6 +166,7 @@ async function provisionNombaWallet(memberPhone, memberName) {
       return {
         walletId: `fallback_wallet_${Date.now()}`,
         virtualAccountNumber: `9999999999`,
+        bankName: 'Nomba Fallback Bank',
       };
     }
     throw new Error('Failed to create virtual wallet');
@@ -150,8 +174,29 @@ async function provisionNombaWallet(memberPhone, memberName) {
 }
 
 function verifyNombaWebhookSignature(req) {
-  // Placeholder – implement with actual secret
-  return true;
+  if (process.env.MOCK_NOMBA === 'true') {
+    return true; // allow mock webhooks during testing
+  }
+  const signature = req.headers['nomba-signature'];
+  if (!signature || !NOMBA_WEBHOOK_SECRET) {
+    console.warn('Webhook: Missing signature header or NOMBA_WEBHOOK_SECRET');
+    return false;
+  }
+  
+  const payload = req.rawBody || JSON.stringify(req.body);
+  const expectedSignature = crypto
+    .createHmac('sha256', NOMBA_WEBHOOK_SECRET)
+    .update(payload)
+    .digest('hex');
+
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(signature, 'utf8'),
+      Buffer.from(expectedSignature, 'utf8')
+    );
+  } catch (err) {
+    return false;
+  }
 }
 
 async function sendSms(phone, message) {
@@ -375,10 +420,11 @@ app.post('/api/admin/members/onboard', requireAuth, requireRole('admin'), async 
     if (duplicate) return res.status(409).json({ error: 'Phone number already exists in this cooperative' });
 
     const fullName = `${firstName} ${lastName}`;
-    const wallet = await provisionNombaWallet(normalizedPhone, fullName);
+    const memberId = generateId();
+    const accountRef = `VA-${cooperativeId}-${memberId}`;
+    const wallet = await provisionNombaWallet(accountRef, fullName);
     const tempPassword = generateTempPassword();
     const hashedPassword = await hashString(tempPassword);
-    const memberId = generateId();
     const memberData = {
       cooperativeId,
       firstName,
@@ -390,6 +436,7 @@ app.post('/api/admin/members/onboard', requireAuth, requireRole('admin'), async 
       hasCompletedFirstLogin: false,
       nombaWalletId: wallet.walletId,
       virtualAccountNumber: wallet.virtualAccountNumber,
+      bankName: wallet.bankName,
       monthsSaved: parseInt(monthsSaved) || 0,
       totalBalance: parseFloat(currentBalance) || 0,
       linkedCardToken: null,
@@ -398,7 +445,7 @@ app.post('/api/admin/members/onboard', requireAuth, requireRole('admin'), async 
       createdAt: new Date().toISOString(),
     };
     await set(`members/${memberId}`, memberData);
-    await sendSms(normalizedPhone, `Welcome to CircleCo! Your temporary password is ${tempPassword}. Please login and set your PIN.`);
+    await sendSms(normalizedPhone, `Welcome to CircleCo! Your virtual account is ${wallet.virtualAccountNumber} (${wallet.bankName}). Temporary password: ${tempPassword}. Please login and set your PIN.`);
     res.status(201).json({ message: 'Member onboarded successfully', memberId, tempPassword });
   } catch (error) {
     console.error(error);
@@ -429,10 +476,11 @@ app.post('/api/admin/members/bulk', requireAuth, requireRole('admin'), upload.si
 
       try {
         const fullName = `${first_name} ${last_name}`;
-        const wallet = await provisionNombaWallet(normalizedPhone, fullName);
+        const memberId = generateId();
+        const accountRef = `VA-${cooperativeId}-${memberId}`;
+        const wallet = await provisionNombaWallet(accountRef, fullName);
         const tempPassword = generateTempPassword();
         const hashedPassword = await hashString(tempPassword);
-        const memberId = generateId();
         await set(`members/${memberId}`, {
           cooperativeId,
           firstName: first_name,
@@ -444,6 +492,7 @@ app.post('/api/admin/members/bulk', requireAuth, requireRole('admin'), upload.si
           hasCompletedFirstLogin: false,
           nombaWalletId: wallet.walletId,
           virtualAccountNumber: wallet.virtualAccountNumber,
+          bankName: wallet.bankName,
           monthsSaved: parseInt(months_saved) || 0,
           totalBalance: parseFloat(current_balance) || 0,
           linkedCardToken: null,
@@ -452,7 +501,7 @@ app.post('/api/admin/members/bulk', requireAuth, requireRole('admin'), upload.si
           createdAt: new Date().toISOString(),
         });
         results.created++;
-        await sendSms(normalizedPhone, `Welcome to CircleCo! Your temporary password is ${tempPassword}. Please login and set your PIN.`);
+        await sendSms(normalizedPhone, `Welcome to CircleCo! Your virtual account is ${wallet.virtualAccountNumber} (${wallet.bankName}). Temporary password: ${tempPassword}. Please login and set your PIN.`);
       } catch (err) {
         results.errors.push(`Failed to onboard ${normalizedPhone}: ${err.message}`);
       }
@@ -626,46 +675,86 @@ app.post('/api/webhook/nomba', async (req, res) => {
   if (!verifyNombaWebhookSignature(req)) return res.status(401).json({ error: 'Invalid signature' });
   try {
     const payload = req.body;
-    const { transactionReference, phone, amount, status, virtualAccountNumber } = payload;
-    if (status !== 'successful') {
-      console.log('Webhook: non-successful funding', payload);
+    
+    // Extract parameters from standard nested Nomba payload or direct flat payload
+    const eventType = payload.event || payload.event_type || payload.status;
+    const data = payload.data || payload;
+
+    const amount = data.amount || (data.order && data.order.amount);
+    const transactionReference = data.transactionReference || data.merchantTxRef || data.paymentReference || payload.transactionReference || (data.order && data.order.orderReference);
+    const virtualAccountNumber = data.virtualAccountNumber || data.bankAccountNumber;
+    const accountId = data.accountId || data.accountHolderId;
+    const phone = data.phone || (data.customer && data.customer.phone);
+
+    const successEvents = ['successful', 'payment_success', 'virtual_account.funded'];
+    if (eventType && !successEvents.includes(eventType.toLowerCase())) {
+      console.log('Webhook: non-successful funding event', eventType, payload);
       return res.sendStatus(200);
     }
+
+    if (!amount) {
+      console.warn('Webhook: Missing amount', payload);
+      return res.sendStatus(200);
+    }
+
     let memberId = null, memberData = null;
-    if (virtualAccountNumber) {
+
+    // 1. Try to find by accountId (nombaWalletId)
+    if (accountId) {
+      const membersSnap = await ref('members').orderByChild('nombaWalletId').equalTo(accountId).once('value');
+      if (membersSnap.exists()) {
+        membersSnap.forEach(child => { memberId = child.key; memberData = child.val(); });
+      }
+    }
+
+    // 2. Try to find by virtualAccountNumber
+    if (!memberId && virtualAccountNumber) {
       const membersSnap = await ref('members').orderByChild('virtualAccountNumber').equalTo(virtualAccountNumber).once('value');
       if (membersSnap.exists()) {
         membersSnap.forEach(child => { memberId = child.key; memberData = child.val(); });
       }
     }
+
+    // 3. Try to find by phone
     if (!memberId && phone) {
-      const membersSnap = await ref('members').orderByChild('phone').equalTo(phone).once('value');
+      const membersSnap = await ref('members').orderByChild('phone').equalTo(normalizePhone(phone)).once('value');
       if (membersSnap.exists()) {
         membersSnap.forEach(child => { memberId = child.key; memberData = child.val(); });
       }
     }
+
     if (!memberId) {
       console.warn('Webhook: No member found for transaction', payload);
       return res.sendStatus(200);
     }
-    const existingTxnSnap = await ref('savingsTransactions').orderByChild('nombaTransactionReference').equalTo(transactionReference).once('value');
+
+    const txRef = transactionReference || `REF-${Date.now()}`;
+    const existingTxnSnap = await ref('savingsTransactions').orderByChild('nombaTransactionReference').equalTo(txRef).once('value');
     if (existingTxnSnap.exists()) {
-      console.log('Duplicate webhook ignored', transactionReference);
+      console.log('Duplicate webhook ignored', txRef);
       return res.sendStatus(200);
     }
+
+    // Record transaction
     const txnId = generateId();
     await set(`savingsTransactions/${txnId}`, {
       memberId,
       cooperativeId: memberData.cooperativeId,
       amount: parseFloat(amount),
       type: 'wallet_transfer',
-      nombaTransactionReference: transactionReference,
+      nombaTransactionReference: txRef,
       status: 'successful',
       createdAt: new Date().toISOString(),
     });
-    const newBalance = (memberData.totalBalance || 0) + parseFloat(amount);
-    await ref(`members/${memberId}`).update({ totalBalance: newBalance });
-    await sendSms(memberData.phone, `Your CircleCo wallet has been funded with ₦${amount}. New balance: ₦${newBalance}.`);
+
+    // Atomically increment member balance to avoid race conditions
+    let newBalance;
+    const balanceResult = await ref(`members/${memberId}/totalBalance`).transaction((currentBalance) => {
+      return (currentBalance || 0) + parseFloat(amount);
+    });
+    newBalance = balanceResult.snapshot.val();
+
+    await sendSms(memberData.phone, `Your CircleCo wallet has been funded with ₦${amount}. New balance: ₦${newBalance.toFixed(2)}.`);
     res.sendStatus(200);
   } catch (error) {
     console.error('Webhook processing error:', error);

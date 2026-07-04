@@ -122,7 +122,9 @@ async function loadProfile() {
 
     document.getElementById('memberName').textContent = `${data.firstName} ${data.lastName}`;
     document.getElementById('memberPhone').textContent = data.phone;
-    document.getElementById('memberVirtualAccount').textContent = `Account: ${data.virtualAccountNumber || 'Not available'}`;
+    document.getElementById('memberVirtualAccount').textContent = data.virtualAccountNumber 
+      ? `Account: ${data.virtualAccountNumber} (${data.bankName || 'Nomba Bank'})` 
+      : 'Account: Not available';
     document.getElementById('memberBalance').textContent = (data.totalBalance || 0).toFixed(2);
     document.getElementById('memberMonths').textContent = `${data.monthsSaved || 0} months`;
 
